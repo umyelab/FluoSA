@@ -1,14 +1,14 @@
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires=["pdm-backend"]
+build-backend="pdm.backend"
 
 [project]
-name = "FluoSA"
-description = "Calcium imaging Signals Analyzer for user-defined neural structures."
-authors = [
-    {name = "Yujia Hu", email = "henryhu@umich.edu"},
+name="FluoSA"
+description="Fluorescence Signal Analyzer for calcium imaging on user-defined neural structures."
+authors=[
+    {name="Yujia Hu",email="henryhu@umich.edu"},
 ]
-dependencies = [
+dependencies=[
     "numpy",
     "scipy",
     "readlif",
@@ -18,15 +18,15 @@ dependencies = [
     "xlsxwriter",
     "pandas",
     "wxPython",
-    "torch==2.0.1 ; platform_system == 'Darwin'",
-    "torchvision==0.15.2 ; platform_system == 'Darwin'",
+    "torch==2.0.1;platform_system=='Darwin'",
+    "torchvision==0.15.2;platform_system=='Darwin'",
     "packaging",
 ]
-requires-python = ">=3.9,<3.11"
-readme = "README.md"
-license = {text = "GPL-3.0"}
-keywords = ["Calcium imaging", "Leica confocal", "Live imaging"]
-classifiers = [
+requires-python=">=3.9,<3.11"
+readme="README.md"
+license={text="GPL-3.0"}
+keywords=["Fluorescence Signal",Calcium imaging","Leica confocal"]
+classifiers=[
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -34,23 +34,23 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
-dynamic = ["version"]
+dynamic=["version"]
 
 [project.urls]
-Homepage = "http://github.com/yujiahu415/FluoSA"
+Homepage="http://github.com/yujiahu415/FluoSA"
 
 [project.scripts]
-FluoSA = "FluoSA.__main__:main"
+FluoSA="FluoSA.__main__:main"
 
 [tool.pdm]
-distribution = true
+distribution=true
 
 [tool.pdm.version]
-source = "file"
-path = "FluoSA/__init__.py"
+source="file"
+path="FluoSA/__init__.py"
 
 [tool.pdm.dev-dependencies]
-docs = [
+docs=[
     "sphinx>=7.2.6",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-copybutton>=0.5.2",
@@ -60,8 +60,8 @@ docs = [
 ]
 
 [tool.ruff]
-line-length = 120
+line-length=120
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I001"]
-ignore-init-module-imports = true
+select=["E4","E7","E9","F","I001"]
+ignore-init-module-imports=true
