@@ -27,8 +27,8 @@ from pathlib import Path
 import torch
 import json
 import shutil
-from analyzer import AnalyzeCalciumSignal
-from detector import traindetector,testdetector
+from .analyzer import AnalyzeCalciumSignal
+from .detector import traindetector,testdetector
 from FluoSA import __version__
 
 the_absolute_current_path=str(Path(__file__).resolve().parent)
