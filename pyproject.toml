@@ -47,7 +47,7 @@ distribution = true
 
 [tool.pdm.version]
 source = "file"
-path = "FlouSA/__init__.py"
+path = "FluoSA/__init__.py"
 
 [tool.pdm.dev-dependencies]
 docs = [
