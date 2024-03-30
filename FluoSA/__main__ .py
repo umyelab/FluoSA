@@ -23,7 +23,7 @@ import json
 from pathlib import Path
 from urllib import request
 from packaging import version
-from FluoSA import __version__, gui
+from FluoSA import __version__,gui
 
 
 def main():
@@ -43,7 +43,7 @@ def main():
 		
 		pass
 
-	guis.main_window()
+	gui.main_window()
 
 if __name__ == "__main__":
 
