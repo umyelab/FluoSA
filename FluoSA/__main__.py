@@ -19,9 +19,7 @@ Email: bingye@umich.edu
 
 
 
-import json
-from pathlib import Path
-from urllib import request
+import requests
 from packaging import version
 from FluoSA import __version__,gui
 
@@ -31,7 +29,7 @@ def main():
 	try:
 
 		current_version=version.parse(__version__)
-		pypi_json=json.loads(request.urlopen('https://pypi.python.org/pypi/FluoSA/json').read())
+		pypi_json=requests.get('https://pypi.org/pypi/FluoSA/json').json()
 		latest_version=version.parse(pypi_json['info']['version'])
 
 		if latest_version>current_version:
@@ -45,9 +43,8 @@ def main():
 
 	gui.main_window()
 
-if __name__ == "__main__":
+
+if __name__=='__main__':
 
 	main()
-
-
 
