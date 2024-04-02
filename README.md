@@ -50,3 +50,5 @@ FluoSA
 
 Then the user interface will be initiated:
 
+![alt text](https://github.com/umyelab/FluoSA/blob/main/Examples/GUI.png?raw=true) 
+
