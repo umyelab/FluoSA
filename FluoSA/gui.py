@@ -59,7 +59,7 @@ class InitialWindow(wx.Frame):
 		boxsizer.Add(0,60,0)
 		
 		links=wx.BoxSizer(wx.HORIZONTAL)
-		homepage=hl.HyperLinkCtrl(panel,0,'Home Page',URL='')
+		homepage=hl.HyperLinkCtrl(panel,0,'Home Page',URL='https://github.com/umyelab/FluoSA')
 		userguide=hl.HyperLinkCtrl(panel,0,'Extended Guide',URL='')
 		links.Add(homepage,0,wx.LEFT|wx.EXPAND,10)
 		links.Add(userguide,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)

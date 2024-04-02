@@ -37,7 +37,7 @@ classifiers=[
 dynamic=["version"]
 
 [project.urls]
-Homepage="http://github.com/yujiahu415/FluoSA"
+Homepage="https://github.com/umyelab/FluoSA"
 
 [project.scripts]
 FluoSA="FluoSA.__main__:main"

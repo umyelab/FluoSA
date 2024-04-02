@@ -35,7 +35,7 @@ def main():
 		if latest_version>current_version:
 			print('A newer version '+'('+str(latest_version)+')'+' of FluoSA is available.')
 			print('You may upgrade it by "python3 -m pip install --upgrade FluoSA".')
-			print('For the details of new changes, check: "https://github.com/yujiahu415/FluoSA".')
+			print('For the details of new changes, check: "https://github.com/umyelab/FluoSA".')
 
 	except:
 		
