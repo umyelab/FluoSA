@@ -245,7 +245,8 @@ class AnalyzeCalciumSignal():
 			if frame_count<self.duration:
 
 				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
-				frame_project=np.array(frame_project).sum(0)/len(frame_project)
+				#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+				frame_project=np.array(frame_project).max(0)
 
 				if autofind_t is True:
 
@@ -365,7 +366,8 @@ class AnalyzeCalciumSignal():
 			if frame_count<self.duration:
 
 				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
-				frame_project=np.array(frame_project).sum(0)/len(frame_project)
+				#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+				frame_project=np.array(frame_project).max(0)
 				frame_project[frame_project>255]=255
 				frame_project=cv2.cvtColor(np.uint8(frame_project),cv2.COLOR_GRAY2BGR)
 
@@ -462,7 +464,8 @@ class AnalyzeCalciumSignal():
 				if self.stim_t<=frame_count<end_t and frame_count%skip_redundant==0:
 
 					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=channel)]
-					frame_project=np.array(frame_project).sum(0)/len(frame_project)
+					#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+					frame_project=np.array(frame_project).max(0)
 					frame_project[frame_project>255]=255
 					out_image=os.path.join(self.results_path,str(channel)+'_'+str(frame_count)+'.jpg')
 					cv2.imwrite(out_image,np.uint8(np.array(frame_project)))
