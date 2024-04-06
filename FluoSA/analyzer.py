@@ -42,6 +42,7 @@ class AnalyzeCalciumSignal():
 		self.neuro_mapping=None
 		self.path_to_lif=path_to_lif
 		self.results_path=os.path.join(results_path,os.path.splitext(os.path.basename(self.path_to_lif))[0])
+		os.makedirs(self.results_path,exist_ok=True)
 		self.neuro_number=None
 		self.neuro_kinds=None  # the catgories of neural structures to be analyzed
 		self.stim_t=stim_t  # the frame number when stimulation is on 
@@ -84,7 +85,6 @@ class AnalyzeCalciumSignal():
 		DetectionCheckpointer(self.detector).load(detector)
 		self.detector.eval()
 
-		os.makedirs(self.results_path,exist_ok=True)
 		self.neuro_number=neuro_number
 		self.neuro_kinds=neuro_kinds
 
