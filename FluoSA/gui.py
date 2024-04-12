@@ -863,7 +863,7 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				self.decode_t=False
 				dialog1=wx.NumberEntryDialog(self,'Enter a time','The unit is frame:','Stimulation onset',5,0,100000000000000)
 				if dialog1.ShowModal()==wx.ID_OK:
-					self.t=float(dialog1.GetValue())
+					self.t=int(dialog1.GetValue())
 				dialog1.Destroy()
 				text='Stimulation onset at: '+str(self.t)+' frame.'
 		dialog.Destroy()
