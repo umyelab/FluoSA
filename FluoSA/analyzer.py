@@ -58,7 +58,10 @@ class AnalyzeCalciumSignal():
 		self.neuro_contours={}
 		self.neuro_centers={}
 		self.neuro_existingcenters={}
+		self.neuro_masks={}
+		self.neuro_areas={}
 		self.neuro_Fmeans={}
+		self.neuro_correctFmeans={}
 		self.all_parameters={}
 
 
@@ -101,7 +104,10 @@ class AnalyzeCalciumSignal():
 			self.neuro_contours[neuro_name]={}
 			self.neuro_centers[neuro_name]={}
 			self.neuro_existingcenters[neuro_name]={}
+			self.neuro_masks[neuro_name]={}
+			self.neuro_areas[neuro_name]={}
 			self.neuro_Fmeans[neuro_name]={}
+			self.neuro_correctFmeans[neuro_name]={}
 
 			for i in range(self.neuro_number[neuro_name]):
 				self.to_deregister[neuro_name][i]=0
@@ -109,12 +115,15 @@ class AnalyzeCalciumSignal():
 				self.neuro_contours[neuro_name][i]=[None]*self.duration
 				self.neuro_centers[neuro_name][i]=[None]*self.duration
 				self.neuro_existingcenters[neuro_name][i]=(-10000,-10000)
+				self.neuro_masks[neuro_name][i]=[None]*self.duration
+				self.neuro_areas[neuro_name][i]=[None]*self.duration
 				self.neuro_Fmeans[neuro_name][i]=[0.0]*self.duration
+				self.neuro_correctFmeans[neuro_name][i]=[0.0]*self.duration
 
 		print('Preparation completed!')
 
 
-	def track_neuro(self,frame_count,neuro_name,contours,centers,Fmeans):
+	def track_neuro(self,frame_count,neuro_name,contours,centers,masks,areas,Fmeans):
 
 		unused_existing_indices=list(self.neuro_existingcenters[neuro_name])
 		existing_centers=list(self.neuro_existingcenters[neuro_name].values())
@@ -124,27 +133,32 @@ class AnalyzeCalciumSignal():
 		length=len(centers)
 
 		for idx in dt_sort_index:
-			index_in_existing=int(idx/length)
-			index_in_new=int(idx%length)
-			if index_in_existing in unused_existing_indices:
-				if index_in_new in unused_new_indices:
-					unused_existing_indices.remove(index_in_existing)
-					unused_new_indices.remove(index_in_new)
-					if self.register_counts[neuro_name][index_in_existing] is None:
-						self.register_counts[neuro_name][index_in_existing]=frame_count
-					self.to_deregister[neuro_name][index_in_existing]=0
-					self.neuro_contours[neuro_name][index_in_existing][frame_count]=contours[index_in_new]
-					center=centers[index_in_new]
-					self.neuro_centers[neuro_name][index_in_existing][frame_count]=center
-					self.neuro_existingcenters[neuro_name][index_in_existing]=center
-					self.neuro_Fmeans[neuro_name][index_in_existing][frame_count]=Fmeans[index_in_new]
+			if dt_flattened[idx]<50:
+				index_in_existing=int(idx/length)
+				index_in_new=int(idx%length)
+				if index_in_existing in unused_existing_indices:
+					if index_in_new in unused_new_indices:
+						unused_existing_indices.remove(index_in_existing)
+						unused_new_indices.remove(index_in_new)
+						if self.register_counts[neuro_name][index_in_existing] is None:
+							self.register_counts[neuro_name][index_in_existing]=frame_count
+						self.to_deregister[neuro_name][index_in_existing]=0
+						self.neuro_contours[neuro_name][index_in_existing][frame_count]=contours[index_in_new]
+						center=centers[index_in_new]
+						self.neuro_centers[neuro_name][index_in_existing][frame_count]=center
+						self.neuro_existingcenters[neuro_name][index_in_existing]=center
+						self.neuro_masks[neuro_name][index_in_existing][frame_count]=masks[index_in_new]
+						self.neuro_areas[neuro_name][index_in_existing][frame_count]=areas[index_in_new]
+						self.neuro_Fmeans[neuro_name][index_in_existing][frame_count]=Fmeans[index_in_new]
 
+		'''
 		if len(unused_existing_indices)>0:
 			for i in unused_existing_indices:
 				if self.to_deregister[neuro_name][i]<5:
 					self.to_deregister[neuro_name][i]+=1
 				else:
 					self.neuro_existingcenters[neuro_name][i]=(-10000,-10000)
+		'''
 
 
 	def detect_neuro(self,frames,images,batch_size,frame_count):
@@ -183,6 +197,8 @@ class AnalyzeCalciumSignal():
 					centers=[]
 					goodcontours=[]
 					goodmasks=[]
+					final_masks=[]
+					final_areas=[]
 					Fmeans=[]
 
 					neuro_number=int(self.neuro_number[neuro_name])
@@ -210,14 +226,16 @@ class AnalyzeCalciumSignal():
 							area=areas_sorted[x]
 							cnt=goodcontours[x]
 							contours.append(cnt)
-							centers.append((int(cv2.moments(cnt)['m10']/cv2.moments(cnt)['m00']),int(cv2.moments(cnt)['m01']/cv2.moments(cnt)['m00'])))  
+							centers.append((int(cv2.moments(cnt)['m10']/cv2.moments(cnt)['m00']),int(cv2.moments(cnt)['m01']/cv2.moments(cnt)['m00'])))
+							final_masks.append(mask)
+							final_areas.append(area)
 
 							if area>0:
 								Fmeans.append(np.sum(frame*mask)/area)
 							else:
 								Fmeans.append(0)
 
-						self.track_neuro(frame_count+1-batch_size+batch_count,neuro_name,contours,centers,Fmeans)
+						self.track_neuro(frame_count+1-batch_size+batch_count,neuro_name,contours,centers,final_masks,final_areas,Fmeans)
 
 
 	def acquire_information(self,batch_size=1,autofind_t=False,stimulation_channel=0,main_channel=0):
@@ -313,38 +331,64 @@ class AnalyzeCalciumSignal():
 					del self.neuro_centers[neuro_name][i]
 					del self.neuro_existingcenters[neuro_name][i]
 					del self.neuro_contours[neuro_name][i]
+					del self.neuro_masks[neuro_name][i]
+					del self.neuro_areas[neuro_name][i]
 					del self.neuro_Fmeans[neuro_name][i]
+					del self.neuro_correctFmeans[neuro_name][i]
 
-			centers_for_sort=[]
 			centers=[]
 			contours=[]
+			masks=[]
+			areas=[]
 			Fmeans=[]
+			correctFmeans=[]
 
 			for i in self.neuro_centers[neuro_name]:
-				centers_for_sort.append([c for c in self.neuro_centers[neuro_name][i] if c is not None][-1])
-				centers.append(self.neuro_centers[neuro_name][i])
-				contours.append(self.neuro_contours[neuro_name][i])
+
+				temp_centers=[c for c in self.neuro_centers[neuro_name][i] if c is not None]
+				temp_contours=[c for c in self.neuro_contours[neuro_name][i] if c is not None]
+				temp_masks=[m for m in self.neuro_masks[neuro_name][i] if m is not None]
+				temp_areas=[a for a in self.neuro_areas[neuro_name][i] if a is not None]
+
+				idx=np.argsort(temp_areas)[-1]
+
+				centers.append(temp_centers[idx])
+				contours.append(temp_contours[idx])
+				masks.append(temp_masks[idx])
+				areas.append(temp_areas[idx])
 				Fmeans.append(self.neuro_Fmeans[neuro_name][i])
+				correctFmeans.append(self.neuro_correctFmeans[neuro_name][i])
 
 			self.neuro_centers[neuro_name]={}
 			self.neuro_contours[neuro_name]={}
+			self.neuro_masks[neuro_name]={}
+			self.neuro_areas[neuro_name]={}
 			self.neuro_Fmeans[neuro_name]={}
+			self.neuro_correctFmeans[neuro_name]={}
 
-			sorted_indices=sorted(range(len(centers_for_sort)),key=lambda i:centers_for_sort[i][1])
-			centers_for_sort=[centers_for_sort[i] for i in sorted_indices]
+			sorted_indices=sorted(range(len(centers)),key=lambda i:centers[i][1])
 			centers=[centers[i] for i in sorted_indices]
 			contours=[contours[i] for i in sorted_indices]
+			masks=[masks[i] for i in sorted_indices]
+			areas=[areas[i] for i in sorted_indices]
 			Fmeans=[Fmeans[i] for i in sorted_indices]
+			correctFmeans=[correctFmeans[i] for i in sorted_indices]
 
-			sorted_indices=sorted(range(len(centers_for_sort)),key=lambda i:centers_for_sort[i][0])
+			sorted_indices=sorted(range(len(centers)),key=lambda i:centers[i][0])
 			centers=[centers[i] for i in sorted_indices]
 			contours=[contours[i] for i in sorted_indices]
+			masks=[masks[i] for i in sorted_indices]
+			areas=[areas[i] for i in sorted_indices]
 			Fmeans=[Fmeans[i] for i in sorted_indices]
+			correctFmeans=[correctFmeans[i] for i in sorted_indices]
 
 			for i in range(len(sorted_indices)):
 				self.neuro_centers[neuro_name][i]=centers[i]
 				self.neuro_contours[neuro_name][i]=contours[i]
+				self.neuro_masks[neuro_name][i]=masks[i]
+				self.neuro_areas[neuro_name][i]=areas[i]
 				self.neuro_Fmeans[neuro_name][i]=Fmeans[i]
+				self.neuro_correctFmeans[neuro_name][i]=correctFmeans[i]
 
 		print('Data crafting completed!')
 
@@ -378,12 +422,11 @@ class AnalyzeCalciumSignal():
 
 				for neuro_name in self.neuro_kinds:
 					for i in self.neuro_centers[neuro_name]:
-						if self.neuro_centers[neuro_name][i][frame_count] is not None:
-							cx=self.neuro_centers[neuro_name][i][frame_count][0]
-							cy=self.neuro_centers[neuro_name][i][frame_count][1]
-							cv2.putText(frame_project,neuro_name+str(i),(cx-1,cy+1),cv2.FONT_HERSHEY_SIMPLEX,0.4,(255,255,0),1)
-							ct=self.neuro_contours[neuro_name][i][frame_count]
-							cv2.drawContours(frame_project,[ct],0,(255,255,0),1)
+						cx=self.neuro_centers[neuro_name][i][0]
+						cy=self.neuro_centers[neuro_name][i][1]
+						cv2.putText(frame_project,neuro_name+str(i),(cx-1,cy+1),cv2.FONT_HERSHEY_SIMPLEX,0.4,(255,255,0),1)
+						ct=self.neuro_contours[neuro_name][i]
+						cv2.drawContours(frame_project,[ct],0,(255,255,0),1)
 
 				writer.write(frame_project)
 
@@ -403,25 +446,55 @@ class AnalyzeCalciumSignal():
 		print('Quantifying neural activities...')
 		print(datetime.datetime.now())
 
+		frame_count=0
+		lifdata=LifFile(self.path_to_lif)
+		file=[i for i in lifdata.get_iter_image()][0]
+
+		while True:
+
+			if frame_count<self.duration:
+
+				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
+				#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+				frame_project=np.array(frame_project).max(0)
+
+				for neuro_name in self.neuro_kinds:
+
+					for i in self.neuro_centers[neuro_name]:
+
+						mask=self.neuro_masks[neuro_name][i]
+						area=self.neuro_areas[neuro_name][i]
+
+						self.neuro_correctFmeans[neuro_name][i][frame_count]=np.sum(frame_project*mask)/area
+
+				if (frame_count+1)%10==0:
+					print(str(frame_count+1)+' frames quantified...')
+					print(datetime.datetime.now())
+
+			if frame_count>=self.full_duration:
+				break
+
+			frame_count+=1
+
 		for neuro_name in self.neuro_kinds:
 
-			for i in self.neuro_Fmeans[neuro_name]:
+			for i in self.neuro_correctFmeans[neuro_name]:
 
-				df=pd.DataFrame(self.neuro_Fmeans[neuro_name],index=[i for i in range(self.duration)])
+				df=pd.DataFrame(self.neuro_correctFmeans[neuro_name],index=[i for i in range(self.duration)])
 				df.to_excel(os.path.join(self.results_path,neuro_name+'_F.xlsx'),float_format='%.2f',index_label='frame/ID')
 
 				if self.stim_t<=F0_period:
-					F_array=self.neuro_Fmeans[neuro_name][i][:(self.stim_t-1)]
+					F_array=self.neuro_correctFmeans[neuro_name][i][:(self.stim_t-1)]
 				else:
-					F_array=self.neuro_Fmeans[neuro_name][i][(self.stim_t-F0_period-1):(self.stim_t-1)]
+					F_array=self.neuro_correctFmeans[neuro_name][i][(self.stim_t-F0_period-1):(self.stim_t-1)]
 
 				F0=np.array(F_array).mean()
 				self.all_parameters[neuro_name]['F0'][i]=F0
 
 				if self.stim_t+F_period>=self.duration:
-					F_array=self.neuro_Fmeans[neuro_name][i][self.stim_t:]
+					F_array=self.neuro_correctFmeans[neuro_name][i][self.stim_t:]
 				else:
-					F_array=self.neuro_Fmeans[neuro_name][i][self.stim_t:(self.stim_t+F_period)]
+					F_array=self.neuro_correctFmeans[neuro_name][i][self.stim_t:(self.stim_t+F_period)]
 
 				Fmax=np.array(F_array).max()
 				self.all_parameters[neuro_name]['Fmax'][i]=Fmax
