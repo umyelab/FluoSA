@@ -133,9 +133,13 @@ class AnalyzeCalciumSignal():
 		length=len(centers)
 
 		for idx in dt_sort_index:
-			if dt_flattened[idx]<50:
-				index_in_existing=int(idx/length)
-				index_in_new=int(idx%length)
+			index_in_existing=int(idx/length)
+			index_in_new=int(idx%length)
+			if self.neuro_existingcenters[neuro_name][index_in_existing][0]==-10000:
+				dt=np.inf
+			else:
+				dt=50
+			if dt_flattened[idx]<dt:
 				if index_in_existing in unused_existing_indices:
 					if index_in_new in unused_new_indices:
 						unused_existing_indices.remove(index_in_existing)
@@ -410,8 +414,8 @@ class AnalyzeCalciumSignal():
 			if frame_count<self.duration:
 
 				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
-				#frame_project=np.array(frame_project).sum(0)/len(frame_project)
-				frame_project=np.array(frame_project).max(0)
+				frame_project=np.array(frame_project).sum(0)/len(frame_project)
+				#frame_project=np.array(frame_project).max(0)
 				frame_project[frame_project>255]=255
 				frame_project=cv2.cvtColor(np.uint8(frame_project),cv2.COLOR_GRAY2BGR)
 
