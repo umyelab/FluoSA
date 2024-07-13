@@ -18,26 +18,26 @@ https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&targ
 
 <p>&nbsp;</p>
 
-### 3 Install PyTorch 2.0.1
-#### 3.1 For Windows and Linux
-##### 3.1.1 If using GPU
+### 3 Install Detectron2
 ```
-python3 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
-```
-##### 3.1.2 CPU only
-```
-python3 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cpu
-```
-#### 3.2 For Mac
-```
-python3 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
+python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 ```
 
 <p>&nbsp;</p>
 
-### 4 Install Detectron2
+### 4 Install PyTorch 2.0.1
+#### 4.1 For Windows and Linux
+##### 4.1.1 If using GPU
 ```
-python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+python3 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
+```
+##### 4.1.2 CPU only
+```
+python3 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cpu
+```
+#### 4.2 For Mac
+```
+python3 -m pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
 ```
 
 <p>&nbsp;</p>
