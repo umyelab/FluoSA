@@ -18,8 +18,7 @@ dependencies=[
     "xlsxwriter",
     "pandas",
     "wxPython",
-    "torch==2.0.1;platform_system=='Darwin'",
-    "torchvision==0.15.2;platform_system=='Darwin'",
+    "torch==2.3.1",
     "packaging",
     "requests",
 ]
