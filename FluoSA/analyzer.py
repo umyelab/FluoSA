@@ -28,6 +28,7 @@ import numpy as np
 from scipy.spatial import distance
 import pandas as pd
 from readlif.reader import LifFile
+from tifffile import imread
 from detectron2.config import get_cfg
 from detectron2.modeling import build_model
 from detectron2.checkpoint import DetectionCheckpointer
@@ -36,7 +37,7 @@ from detectron2.checkpoint import DetectionCheckpointer
 
 class AnalyzeCalciumSignal():
 
-	def __init__(self,path_to_lif,results_path,stim_t,duration):
+	def __init__(self,path_to_lif,results_path,stim_t,duration,tif=False):
 
 		self.detector=None
 		self.neuro_mapping=None
@@ -45,10 +46,15 @@ class AnalyzeCalciumSignal():
 		os.makedirs(self.results_path,exist_ok=True)
 		self.neuro_number=None
 		self.neuro_kinds=None  # the catgories of neural structures to be analyzed
-		self.stim_t=stim_t  # the frame number when stimulation is on 
-		lifdata=LifFile(self.path_to_lif)
-		file=[i for i in lifdata.get_iter_image()][0]
-		self.full_duration=len([i for i in file.get_iter_t(c=0,z=0)])-1
+		self.stim_t=stim_t  # the frame number when stimulation is on
+		self.tif=tif # whether analyze tif files
+		if self.tif is True:
+			tifdata=imread(self.path_to_lif)
+			self.full_duration=tifdata[0]
+		else:
+			lifdata=LifFile(self.path_to_lif)
+			file=[i for i in lifdata.get_iter_image()][0]
+			self.full_duration=len([i for i in file.get_iter_t(c=0,z=0)])-1
 		self.duration=duration # the duration (in frames) for example generation / analysis, 0: use entire duration
 		if self.duration<=0:
 			self.duration=self.full_duration
