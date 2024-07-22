@@ -18,7 +18,7 @@ Email: bingye@umich.edu
 
 
 
-
+from .detector import Detector
 import os
 import cv2
 import json
@@ -76,24 +76,9 @@ class AnalyzeCalciumSignal():
 		print('Preparation started...')
 		print(datetime.datetime.now())
 
-		config=os.path.join(path_to_detector,'config.yaml')
-		detector=os.path.join(path_to_detector,'model_final.pth')
-		neuromapping=os.path.join(path_to_detector,'model_parameters.txt')
-		with open(neuromapping) as f:
-			model_parameters=f.read()
-		self.neuro_mapping=json.loads(model_parameters)['neuro_mapping']
-		neuro_names=json.loads(model_parameters)['neuro_names']
-		dt_infersize=int(json.loads(model_parameters)['inferencing_framesize'])
-		print('The total categories of neural structures in this Detector: '+str(neuro_names))
-		print('The neural structures of interest in this Detector: '+str(neuro_kinds))
-		print('The inferencing framesize of this Detector: '+str(dt_infersize))
-		cfg=get_cfg()
-		cfg.merge_from_file(config)
-		cfg.MODEL.DEVICE='cuda' if torch.cuda.is_available() else 'cpu'
-		self.detector=build_model(cfg)
-		DetectionCheckpointer(self.detector).load(detector)
-		self.detector.eval()
-
+		self.detector=Detector()
+		self.detector.load(path_to_detector,neuro_kinds)
+		self.neuro_mapping=self.detector.neuro_mapping
 		self.neuro_number=neuro_number
 		self.neuro_kinds=neuro_kinds
 
@@ -179,8 +164,7 @@ class AnalyzeCalciumSignal():
 		tensor_images=[torch.as_tensor(image.astype("float32").transpose(2,0,1)) for image in images]
 		inputs=[{"image":tensor_image} for tensor_image in tensor_images]
 
-		with torch.no_grad():
-			outputs=self.detector(inputs)
+		outputs=self.detector.inference(inputs)
 
 		for batch_count,output in enumerate(outputs):
 
@@ -264,31 +248,40 @@ class AnalyzeCalciumSignal():
 		images=[]
 		batch_count=frame_count=0
 
-		lifdata=LifFile(self.path_to_lif)
-		file=[i for i in lifdata.get_iter_image()][0]
-		channels=[i for i in file.get_iter_c(t=0,z=0)]
+		if self.tif is True:
+			tifdata=imread(self.path_to_lif)
+			file=[i for i in tifdata]
+		else:
+			lifdata=LifFile(self.path_to_lif)
+			file=[i for i in lifdata.get_iter_image()][0]
 
 		while True:
 
 			if frame_count<self.duration:
 
-				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
-				#frame_project=np.array(frame_project).sum(0)/len(frame_project)
-				frame_project=np.array(frame_project).max(0)
+				if self.tif is True:
 
-				if autofind_t is True:
+					frame_project=np.array(file[frame_count])
 
-					frame_project_stim=[np.array(i) for i in file.get_iter_z(t=frame_count,c=stimulation_channel)]
-					frame_project_stim=np.array(frame_project_stim).sum(0)/len(frame_project_stim)
+				else:
 
-					if initial_frame is None:
-						initial_frame=frame_project_stim
+					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
+					#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+					frame_project=np.array(frame_project).max(0)
 
-					if stimulation_checked is False:
-						if np.mean(frame_project_stim)>1.2*np.mean(initial_frame):
-							self.stim_t=frame_count
-							stimulation_checked=True
-							print('Stimulation onset: at frame '+str(self.stim_t)+'.')
+					if autofind_t is True:
+
+						frame_project_stim=[np.array(i) for i in file.get_iter_z(t=frame_count,c=stimulation_channel)]
+						frame_project_stim=np.array(frame_project_stim).sum(0)/len(frame_project_stim)
+
+						if initial_frame is None:
+							initial_frame=frame_project_stim
+
+						if stimulation_checked is False:
+							if np.mean(frame_project_stim)>1.2*np.mean(initial_frame):
+								self.stim_t=frame_count
+								stimulation_checked=True
+								print('Stimulation onset: at frame '+str(self.stim_t)+'.')
 
 				main_frames.append(frame_project)
 				frame_project[frame_project>255]=255
@@ -408,9 +401,12 @@ class AnalyzeCalciumSignal():
 		print('Annotating video...')
 		print(datetime.datetime.now())
 
-		lifdata=LifFile(self.path_to_lif)
-		file=[i for i in lifdata.get_iter_image()][0]
-		channels=[i for i in file.get_iter_c(t=0,z=0)]
+		if self.tif is True:
+			tifdata=imread(self.path_to_lif)
+			file=[i for i in tifdata]
+		else:
+			lifdata=LifFile(self.path_to_lif)
+			file=[i for i in lifdata.get_iter_image()][0]
 
 		frame_count=0
 		writer=None
@@ -419,9 +415,13 @@ class AnalyzeCalciumSignal():
 
 			if frame_count<self.duration:
 
-				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
-				frame_project=np.array(frame_project).sum(0)/len(frame_project)
-				#frame_project=np.array(frame_project).max(0)
+				if self.tif is True:
+					frame_project=np.array(file[frame_count])
+				else:
+					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
+					frame_project=np.array(frame_project).sum(0)/len(frame_project)
+					#frame_project=np.array(frame_project).max(0)
+
 				frame_project[frame_project>255]=255
 				frame_project=cv2.cvtColor(np.uint8(frame_project),cv2.COLOR_GRAY2BGR)
 
@@ -457,16 +457,24 @@ class AnalyzeCalciumSignal():
 		print(datetime.datetime.now())
 
 		frame_count=0
-		lifdata=LifFile(self.path_to_lif)
-		file=[i for i in lifdata.get_iter_image()][0]
+
+		if self.tif is True:
+			tifdata=imread(self.path_to_lif)
+			file=[i for i in tifdata]
+		else:
+			lifdata=LifFile(self.path_to_lif)
+			file=[i for i in lifdata.get_iter_image()][0]
 
 		while True:
 
 			if frame_count<self.duration:
 
-				frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
-				#frame_project=np.array(frame_project).sum(0)/len(frame_project)
-				frame_project=np.array(frame_project).max(0)
+				if self.tif is True:
+					frame_project=np.array(file[frame_count])
+				else:
+					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
+					#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+					frame_project=np.array(frame_project).max(0)
 
 				for neuro_name in self.neuro_kinds:
 
@@ -534,9 +542,15 @@ class AnalyzeCalciumSignal():
 		print('Generating behavior examples...')
 		print(datetime.datetime.now())
 
-		lifdata=LifFile(self.path_to_lif)
-		file=[i for i in lifdata.get_iter_image()][0]
-		channels=[i for i in file.get_iter_c(t=0,z=0)]
+
+		if self.tif is True:
+			tifdata=imread(self.path_to_lif)
+			file=[i for i in tifdata]
+			channels=[0]
+		else:
+			lifdata=LifFile(self.path_to_lif)
+			file=[i for i in lifdata.get_iter_image()][0]
+			channels=[i for i in file.get_iter_c(t=0,z=0)]
 
 		end_t=self.stim_t+self.duration
 
@@ -546,9 +560,13 @@ class AnalyzeCalciumSignal():
 
 				if self.stim_t<=frame_count<end_t and frame_count%skip_redundant==0:
 
-					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=channel)]
-					#frame_project=np.array(frame_project).sum(0)/len(frame_project)
-					frame_project=np.array(frame_project).max(0)
+					if self.tif is True:
+						frame_project=np.array(file[frame_count])
+					else:
+						frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=channel)]
+						#frame_project=np.array(frame_project).sum(0)/len(frame_project)
+						frame_project=np.array(frame_project).max(0)
+
 					frame_project[frame_project>255]=255
 					out_image=os.path.join(self.results_path,str(channel)+'_'+str(frame_count)+'.jpg')
 					cv2.imwrite(out_image,np.uint8(np.array(frame_project)))
