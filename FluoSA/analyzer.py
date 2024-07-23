@@ -37,12 +37,16 @@ from detectron2.checkpoint import DetectionCheckpointer
 
 class AnalyzeCalciumSignal():
 
-	def __init__(self,path_to_lif,results_path,stim_t,duration,tif=False):
+	def __init__(self,path_to_lif,results_path,stim_t,duration):
 
 		self.detector=None
 		self.neuro_mapping=None
 		self.path_to_lif=path_to_lif
 		self.results_path=os.path.join(results_path,os.path.splitext(os.path.basename(self.path_to_lif))[0])
+		if os.path.splitext(os.path.basename(self.path_to_lif))[1] in ['.tif','.TIF','.tiff','.TIFF']:
+			self.tif=True
+		else:
+			self.tif=False
 		os.makedirs(self.results_path,exist_ok=True)
 		self.neuro_number=None
 		self.neuro_kinds=None  # the catgories of neural structures to be analyzed
