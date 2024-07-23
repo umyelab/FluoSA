@@ -690,9 +690,9 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		boxsizer=wx.BoxSizer(wx.VERTICAL)
 
 		module_inputvideos=wx.BoxSizer(wx.HORIZONTAL)
-		button_inputvideos=wx.Button(panel,label='Select the *.LIF file(s)\nfor analyzing calcium signals',size=(300,40))
+		button_inputvideos=wx.Button(panel,label='Select the *.LIF / *.TIF file(s)\nfor analyzing calcium signals',size=(300,40))
 		button_inputvideos.Bind(wx.EVT_BUTTON,self.select_videos)
-		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF file(s).')
+		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF / *.TIF file(s).')
 		self.text_inputvideos=wx.StaticText(panel,label='None.',style=wx.ALIGN_LEFT|wx.ST_ELLIPSIZE_END)
 		module_inputvideos.Add(button_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
 		module_inputvideos.Add(self.text_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
@@ -765,8 +765,8 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 
 	def select_videos(self,event):
 
-		wildcard='LIF files(*.lif)|*.lif;*.LIF'
-		dialog=wx.FileDialog(self,'Select LIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
+		wildcard='LIF / TIF files(*.lif / *.tif)|*.lif;*.LIF;*.tif;*.TIF;*.tiff;*.TIFF'
+		dialog=wx.FileDialog(self,'Select LIF / TIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
 		if dialog.ShowModal()==wx.ID_OK:
 			self.path_to_lifs=dialog.GetPaths()
 			path=os.path.dirname(self.path_to_lifs[0])
