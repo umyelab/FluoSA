@@ -112,7 +112,7 @@ class WindowLv1_TrainingModule(wx.Frame):
 		button_generateimages=wx.Button(panel,label='Generate Image Examples',size=(300,40))
 		button_generateimages.Bind(wx.EVT_BUTTON,self.generate_images)
 		wx.Button.SetToolTip(button_generateimages,
-			'Extract frames from LIF / TIF files to annotate the neural structures of your interest. See Extended Guide for how to select images to annotate.')
+			'Extract frames from LIF/TIF files to annotate the neural structures of your interest. See Extended Guide for how to select images to annotate.')
 		boxsizer.Add(button_generateimages,0,wx.ALIGN_CENTER,10)
 		boxsizer.Add(0,5,0)
 
@@ -208,9 +208,9 @@ class WindowLv2_GenerateImages(wx.Frame):
 		boxsizer=wx.BoxSizer(wx.VERTICAL)
 
 		module_inputvideos=wx.BoxSizer(wx.HORIZONTAL)
-		button_inputvideos=wx.Button(panel,label='Select the *.LIF / *.TIF file(s) to generate\nimage examples',size=(300,40))
+		button_inputvideos=wx.Button(panel,label='Select the *.LIF/*.TIF file(s) to generate\nimage examples',size=(300,40))
 		button_inputvideos.Bind(wx.EVT_BUTTON,self.select_videos)
-		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF / *.TIF files.')
+		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF/*.TIF files.')
 		self.text_inputvideos=wx.StaticText(panel,label='None.',style=wx.ALIGN_LEFT|wx.ST_ELLIPSIZE_END)
 		module_inputvideos.Add(button_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
 		module_inputvideos.Add(self.text_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
@@ -275,8 +275,8 @@ class WindowLv2_GenerateImages(wx.Frame):
 
 	def select_videos(self,event):
 
-		wildcard='LIF / TIF files(*.lif / *.tif)|*.lif;*.LIF;*.tif;*.TIF;*.tiff;*.TIFF'
-		dialog=wx.FileDialog(self,'Select LIF / TIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
+		wildcard='LIF/TIF files (*.lif/*.tif)|*.lif;*.LIF;*.tif;*.TIF;*.tiff;*.TIFF'
+		dialog=wx.FileDialog(self,'Select LIF/TIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
 		if dialog.ShowModal()==wx.ID_OK:
 			self.path_to_lifs=dialog.GetPaths()
 			path=os.path.dirname(self.path_to_lifs[0])
