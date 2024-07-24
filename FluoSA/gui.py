@@ -921,6 +921,9 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 
 		else:
 
+			all_summary=[]
+			all_lengths=[]
+
 			for i in self.path_to_lifs:
 
 				filename=os.path.splitext(os.path.basename(i))[0].split('_')
@@ -946,6 +949,10 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				ACS.craft_data()
 				ACS.annotate_video()
 				ACS.quantify_parameters(F0_period=self.F0_period,F_period=self.F_period)
+
+				time_points=AAD.all_time[:min(all_lengths)]
+				all_events_df=pd.DataFrame(event_data,index=time_points)
+				all_events_df.to_excel(os.path.join(self.result_path,'all_events.xlsx'),float_format='%.2f',index_label='time/ID')
 
 
 
