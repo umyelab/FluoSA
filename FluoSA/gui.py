@@ -922,7 +922,6 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		else:
 
 			all_summary=[]
-			all_lengths=[]
 
 			for i in self.path_to_lifs:
 
@@ -950,9 +949,17 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				ACS.annotate_video()
 				ACS.quantify_parameters(F0_period=self.F0_period,F_period=self.F_period)
 
-				time_points=AAD.all_time[:min(all_lengths)]
-				all_events_df=pd.DataFrame(event_data,index=time_points)
-				all_events_df.to_excel(os.path.join(self.result_path,'all_events.xlsx'),float_format='%.2f',index_label='time/ID')
+				individual_path=os.path.join(self.result_path,os.path.splitext(os.path.basename(i))[0])
+				individual_summary=os.path.join(individual_path,neuro_name+'_summary.xlsx')
+
+				if os.path.exists(individual_summary) is True:
+					all_summary.append(pd.read_excel(individual_summary))
+
+			if len(all_summary)>=1:
+				all_summary=pd.concat(all_summary,ignore_index=True)
+				all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f',index_label='ID/parameter')
+
+			print('Analysis completed!')
 
 
 
