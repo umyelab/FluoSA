@@ -843,7 +843,15 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 
 	def specify_timing(self,event):
 
-		methods=['Automatic (stimulation channel)','Decode from filenames: "_bt_"','Enter a time point']
+		tif=False
+		for file in self.path_to_lifs:
+			if os.path.splitext(os.path.basename(file))[1] in ['.tif','.TIF','.tiff','.TIFF']:
+				tif=True
+
+		if tif:
+			methods=['Decode from filenames: "_bt_"','Enter a time point']
+		else:
+			methods=['Automatic (stimulation channel)','Decode from filenames: "_bt_"','Enter a time point']
 
 		dialog=wx.SingleChoiceDialog(self,message='Specify stimulation time (frame)',caption='Stimulation onset',choices=methods)
 		if dialog.ShowModal()==wx.ID_OK:
@@ -870,12 +878,14 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				text='Stimulation onset at: '+str(self.t)+' frame.'
 		dialog.Destroy()
 
-		dialog=wx.NumberEntryDialog(self,'Main channel','Enter 0,1,2','Main channel',1,0,2)
-		if dialog.ShowModal()==wx.ID_OK:
-			self.main_channel=int(dialog.GetValue())
-		dialog.Destroy()
-
-		self.text_startanalyze.SetLabel(text+' main channel: '+str(self.main_channel)+'.')
+		if tif:
+			self.text_startanalyze.SetLabel(text)
+		else:
+			dialog=wx.NumberEntryDialog(self,'Main channel','Enter 0,1,2','Main channel',1,0,2)
+			if dialog.ShowModal()==wx.ID_OK:
+				self.main_channel=int(dialog.GetValue())
+			dialog.Destroy()
+			self.text_startanalyze.SetLabel(text+' main channel: '+str(self.main_channel)+'.')
 
 
 	def input_duration(self,event):
