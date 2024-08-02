@@ -51,7 +51,7 @@ class AnalyzeCalciumSignal():
 		self.neuro_number=None
 		self.neuro_kinds=None  # the catgories of neural structures to be analyzed
 		self.stim_t=stim_t  # the frame number when stimulation is on
-		if self.tif is True:
+		if self.tif:
 			tifdata=imread(self.path_to_lif)
 			self.full_duration=tifdata[0]
 		else:
