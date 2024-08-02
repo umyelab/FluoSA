@@ -962,10 +962,10 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				ACS.quantify_parameters(F0_period=self.F0_period,F_period=self.F_period)
 
 				individual_path=os.path.join(self.result_path,os.path.splitext(os.path.basename(i))[0])
-				individual_summary=os.path.join(individual_path,neuro_name+'_summary.xlsx')
-
-				if os.path.exists(individual_summary) is True:
-					all_summary.append(pd.read_excel(individual_summary))
+				for neuro_name in self.neuro_kinds:
+					individual_summary=os.path.join(individual_path,neuro_name+'_summary.xlsx')
+					if os.path.exists(individual_summary) is True:
+						all_summary.append(pd.read_excel(individual_summary))
 
 			if len(all_summary)>=1:
 				all_summary=pd.concat(all_summary,ignore_index=True)
