@@ -53,7 +53,7 @@ class AnalyzeCalciumSignal():
 		self.stim_t=stim_t  # the frame number when stimulation is on
 		if self.tif:
 			tifdata=imread(self.path_to_lif)
-			self.full_duration=tifdata[0]
+			self.full_duration=tifdata.shape[0]
 		else:
 			lifdata=LifFile(self.path_to_lif)
 			file=[i for i in lifdata.get_iter_image()][0]
@@ -251,7 +251,7 @@ class AnalyzeCalciumSignal():
 		images=[]
 		batch_count=frame_count=0
 
-		if self.tif is True:
+		if self.tif:
 			tifdata=imread(self.path_to_lif)
 			file=[i for i in tifdata]
 		else:
@@ -262,7 +262,7 @@ class AnalyzeCalciumSignal():
 
 			if frame_count<self.duration:
 
-				if self.tif is True:
+				if self.tif:
 
 					frame_project=np.array(file[frame_count])
 
@@ -404,7 +404,7 @@ class AnalyzeCalciumSignal():
 		print('Annotating video...')
 		print(datetime.datetime.now())
 
-		if self.tif is True:
+		if self.tif:
 			tifdata=imread(self.path_to_lif)
 			file=[i for i in tifdata]
 		else:
@@ -418,7 +418,7 @@ class AnalyzeCalciumSignal():
 
 			if frame_count<self.duration:
 
-				if self.tif is True:
+				if self.tif:
 					frame_project=np.array(file[frame_count])
 				else:
 					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
@@ -461,7 +461,7 @@ class AnalyzeCalciumSignal():
 
 		frame_count=0
 
-		if self.tif is True:
+		if self.tif:
 			tifdata=imread(self.path_to_lif)
 			file=[i for i in tifdata]
 		else:
@@ -472,7 +472,7 @@ class AnalyzeCalciumSignal():
 
 			if frame_count<self.duration:
 
-				if self.tif is True:
+				if self.tif:
 					frame_project=np.array(file[frame_count])
 				else:
 					frame_project=[np.array(i) for i in file.get_iter_z(t=frame_count,c=self.main_channel)]
@@ -546,7 +546,7 @@ class AnalyzeCalciumSignal():
 		print(datetime.datetime.now())
 
 
-		if self.tif is True:
+		if self.tif:
 			tifdata=imread(self.path_to_lif)
 			file=[i for i in tifdata]
 			channels=[0]
