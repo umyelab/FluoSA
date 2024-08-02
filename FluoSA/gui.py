@@ -27,6 +27,7 @@ from pathlib import Path
 import torch
 import json
 import shutil
+import pandas as pd
 from .analyzer import AnalyzeCalciumSignal
 from .detector import Detector
 from FluoSA import __version__
