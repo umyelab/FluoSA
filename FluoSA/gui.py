@@ -27,8 +27,9 @@ from pathlib import Path
 import torch
 import json
 import shutil
+import pandas as pd
 from .analyzer import AnalyzeCalciumSignal
-from .detector import traindetector,testdetector
+from .detector import Detector
 from FluoSA import __version__
 
 the_absolute_current_path=str(Path(__file__).resolve().parent)
@@ -112,7 +113,7 @@ class WindowLv1_TrainingModule(wx.Frame):
 		button_generateimages=wx.Button(panel,label='Generate Image Examples',size=(300,40))
 		button_generateimages.Bind(wx.EVT_BUTTON,self.generate_images)
 		wx.Button.SetToolTip(button_generateimages,
-			'Extract frames from LIF files to annotate the neural structures of your interest. See Extended Guide for how to select images to annotate.')
+			'Extract frames from LIF/TIF files to annotate the neural structures of your interest. See Extended Guide for how to select images to annotate.')
 		boxsizer.Add(button_generateimages,0,wx.ALIGN_CENTER,10)
 		boxsizer.Add(0,5,0)
 
@@ -208,9 +209,9 @@ class WindowLv2_GenerateImages(wx.Frame):
 		boxsizer=wx.BoxSizer(wx.VERTICAL)
 
 		module_inputvideos=wx.BoxSizer(wx.HORIZONTAL)
-		button_inputvideos=wx.Button(panel,label='Select the *.LIF file(s) to generate\nimage examples',size=(300,40))
+		button_inputvideos=wx.Button(panel,label='Select the *.LIF/*.TIF file(s) to generate\nimage examples',size=(300,40))
 		button_inputvideos.Bind(wx.EVT_BUTTON,self.select_videos)
-		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF files.')
+		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF/*.TIF files.')
 		self.text_inputvideos=wx.StaticText(panel,label='None.',style=wx.ALIGN_LEFT|wx.ST_ELLIPSIZE_END)
 		module_inputvideos.Add(button_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
 		module_inputvideos.Add(self.text_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
@@ -275,8 +276,8 @@ class WindowLv2_GenerateImages(wx.Frame):
 
 	def select_videos(self,event):
 
-		wildcard='LIF files(*.lif)|*.lif;*.LIF'
-		dialog=wx.FileDialog(self,'Select LIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
+		wildcard='LIF/TIF files (*.lif/*.tif)|*.lif;*.LIF;*.tif;*.TIF;*.tiff;*.TIFF'
+		dialog=wx.FileDialog(self,'Select LIF/TIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
 		if dialog.ShowModal()==wx.ID_OK:
 			self.path_to_lifs=dialog.GetPaths()
 			path=os.path.dirname(self.path_to_lifs[0])
@@ -490,7 +491,8 @@ class WindowLv2_TrainDetectors(wx.Frame):
 
 			if do_nothing is False:
 
-				traindetector(self.path_to_annotation,self.path_to_trainingimages,self.path_to_detector,self.iteration_num,self.inference_size)
+				DT=Detector()
+				DT.train(self.path_to_annotation,self.path_to_trainingimages,self.path_to_detector,self.iteration_num,self.inference_size)
 
 
 
@@ -635,7 +637,8 @@ class WindowLv2_TestDetectors(wx.Frame):
 		if self.path_to_detector is None or self.path_to_testingimages is None or self.path_to_annotation is None or self.output_path is None:
 			wx.MessageBox('No Detector / training images / annotation file / output path selected.','Error',wx.OK|wx.ICON_ERROR)
 		else:
-			testdetector(self.path_to_annotation,self.path_to_testingimages,self.path_to_detector,self.output_path)
+			DT=Detector()
+			DT.test(self.path_to_annotation,self.path_to_testingimages,self.path_to_detector,self.output_path)
 
 
 	def remove_detector(self,event):
@@ -690,9 +693,9 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		boxsizer=wx.BoxSizer(wx.VERTICAL)
 
 		module_inputvideos=wx.BoxSizer(wx.HORIZONTAL)
-		button_inputvideos=wx.Button(panel,label='Select the *.LIF file(s)\nfor analyzing calcium signals',size=(300,40))
+		button_inputvideos=wx.Button(panel,label='Select the *.LIF/*.TIF file(s)\nfor analyzing calcium signals',size=(300,40))
 		button_inputvideos.Bind(wx.EVT_BUTTON,self.select_videos)
-		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF file(s).')
+		wx.Button.SetToolTip(button_inputvideos,'Select one or more *.LIF/*.TIF file(s).')
 		self.text_inputvideos=wx.StaticText(panel,label='None.',style=wx.ALIGN_LEFT|wx.ST_ELLIPSIZE_END)
 		module_inputvideos.Add(button_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
 		module_inputvideos.Add(self.text_inputvideos,0,wx.LEFT|wx.RIGHT|wx.EXPAND,10)
@@ -765,8 +768,8 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 
 	def select_videos(self,event):
 
-		wildcard='LIF files(*.lif)|*.lif;*.LIF'
-		dialog=wx.FileDialog(self,'Select LIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
+		wildcard='LIF/TIF files (*.lif/*.tif)|*.lif;*.LIF;*.tif;*.TIF;*.tiff;*.TIFF'
+		dialog=wx.FileDialog(self,'Select LIF/TIF file(s)','','',wildcard,style=wx.FD_MULTIPLE)
 		if dialog.ShowModal()==wx.ID_OK:
 			self.path_to_lifs=dialog.GetPaths()
 			path=os.path.dirname(self.path_to_lifs[0])
@@ -841,7 +844,15 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 
 	def specify_timing(self,event):
 
-		methods=['Automatic (stimulation channel)','Decode from filenames: "_bt_"','Enter a time point']
+		tif=False
+		for file in self.path_to_lifs:
+			if os.path.splitext(os.path.basename(file))[1] in ['.tif','.TIF','.tiff','.TIFF']:
+				tif=True
+
+		if tif:
+			methods=['Decode from filenames: "_bt_"','Enter a time point']
+		else:
+			methods=['Automatic (stimulation channel)','Decode from filenames: "_bt_"','Enter a time point']
 
 		dialog=wx.SingleChoiceDialog(self,message='Specify stimulation time (frame)',caption='Stimulation onset',choices=methods)
 		if dialog.ShowModal()==wx.ID_OK:
@@ -868,12 +879,14 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				text='Stimulation onset at: '+str(self.t)+' frame.'
 		dialog.Destroy()
 
-		dialog=wx.NumberEntryDialog(self,'Main channel','Enter 0,1,2','Main channel',1,0,2)
-		if dialog.ShowModal()==wx.ID_OK:
-			self.main_channel=int(dialog.GetValue())
-		dialog.Destroy()
-
-		self.text_startanalyze.SetLabel(text+' main channel: '+str(self.main_channel)+'.')
+		if tif:
+			self.text_startanalyze.SetLabel(text)
+		else:
+			dialog=wx.NumberEntryDialog(self,'Main channel','Enter 0,1,2','Main channel',1,0,2)
+			if dialog.ShowModal()==wx.ID_OK:
+				self.main_channel=int(dialog.GetValue())
+			dialog.Destroy()
+			self.text_startanalyze.SetLabel(text+' main channel: '+str(self.main_channel)+'.')
 
 
 	def input_duration(self,event):
@@ -921,6 +934,8 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 
 		else:
 
+			all_summary=[]
+
 			for i in self.path_to_lifs:
 
 				filename=os.path.splitext(os.path.basename(i))[0].split('_')
@@ -946,6 +961,18 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				ACS.craft_data()
 				ACS.annotate_video()
 				ACS.quantify_parameters(F0_period=self.F0_period,F_period=self.F_period)
+
+				individual_path=os.path.join(self.result_path,os.path.splitext(os.path.basename(i))[0])
+				for neuro_name in self.neuro_kinds:
+					individual_summary=os.path.join(individual_path,neuro_name+'_summary.xlsx')
+					if os.path.exists(individual_summary) is True:
+						all_summary.append(pd.read_excel(individual_summary))
+
+			if len(all_summary)>=1:
+				all_summary=pd.concat(all_summary,ignore_index=True)
+				all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f',index_label='ID/parameter')
+
+			print('Analysis completed!')
 
 
 
