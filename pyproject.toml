@@ -3,11 +3,11 @@ requires=['pdm-backend']
 build-backend='pdm.backend'
 
 [project]
-name='LabGym'
-description='Quantify user-defined behaviors.'
+name='FluoSA'
+description='Fluorescence Signal Analyzer for calcium imaging on user-defined neural structures.'
 authors=[{name='Yujia Hu',email='yujiahu415@gmail.com'}]
 dependencies=[
-	'numpy',
+	'numpy<=1.26.4',
 	'scipy',
 	'readlif',
 	'tifffile',
