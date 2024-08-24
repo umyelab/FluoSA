@@ -19,6 +19,9 @@ dependencies=[
 	'wxPython',
 	'packaging',
 	'requests',
+	'torch',
+	'torchvision',
+	'torchaudio'
 ]
 requires-python='>=3.9,<3.11'
 readme='README.md'
