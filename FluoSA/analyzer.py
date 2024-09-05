@@ -451,7 +451,7 @@ class AnalyzeCalciumSignal():
 		print('Video annotation completed!')
 
 
-	def quantify_parameters(self,F0_period=10,F_period=5):
+	def quantify_parameters(self,F0_period=10,F_period=30):
 
 		# F0_period: the duration (in frames) for calculating F0
 		# F_period: the duration (in frames) for calculating dF/F0
