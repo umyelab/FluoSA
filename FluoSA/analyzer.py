@@ -437,9 +437,9 @@ class AnalyzeCalciumSignal():
 					for i in self.neuro_centers[neuro_name]:
 						cx=self.neuro_centers[neuro_name][i][0]
 						cy=self.neuro_centers[neuro_name][i][1]
-						cv2.putText(frame_project,neuro_name+str(i),(cx-1,cy+1),cv2.FONT_HERSHEY_SIMPLEX,0.4,(255,255,0),1)
+						cv2.putText(frame_project,neuro_name+str(i),(cx-1,cy+1),cv2.FONT_HERSHEY_SIMPLEX,0.3,(0,255,0),1)
 						ct=self.neuro_contours[neuro_name][i]
-						cv2.drawContours(frame_project,[ct],0,(255,255,0),1)
+						cv2.drawContours(frame_project,[ct],0,(0,255,0),1)
 
 				writer.write(frame_project)
 
