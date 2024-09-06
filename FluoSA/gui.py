@@ -935,6 +935,7 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		else:
 
 			all_summary=[]
+			all_F=[]
 
 			for i in self.path_to_lifs:
 
@@ -965,12 +966,18 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				individual_path=os.path.join(self.result_path,os.path.splitext(os.path.basename(i))[0])
 				for neuro_name in self.neuro_kinds:
 					individual_summary=os.path.join(individual_path,neuro_name+'_summary.xlsx')
+					individual_F=os.path.join(individual_path,neuro_name+'_F.xlsx')
 					if os.path.exists(individual_summary) is True:
 						all_summary.append(pd.read_excel(individual_summary))
+					if os.path.exists(individual_F) is True:
+						all_F.append(pd.read_excel(individual_F))
 
 			if len(all_summary)>=1:
 				all_summary=pd.concat(all_summary,ignore_index=True)
 				all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f',index_label='ID/parameter')
+			if len(all_F)>=1:
+				all_F=pd.concat(all_F,ignore_index=True)
+				all_F.to_excel(os.path.join(self.result_path,'all_F.xlsx'),float_format='%.2f',index_label='frame/ID')
 
 			print('Analysis completed!')
 
