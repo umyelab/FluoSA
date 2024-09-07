@@ -935,6 +935,9 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		else:
 
 			all_summary=[]
+			all_F=[]
+			names_summary=[]
+			names_F=[]
 
 			for i in self.path_to_lifs:
 
@@ -962,15 +965,33 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				ACS.annotate_video()
 				ACS.quantify_parameters(F0_period=self.F0_period,F_period=self.F_period)
 
-				individual_path=os.path.join(self.result_path,os.path.splitext(os.path.basename(i))[0])
+				basename=os.path.splitext(os.path.basename(i))[0]
+				individual_path=os.path.join(self.result_path,basename)
+
 				for neuro_name in self.neuro_kinds:
 					individual_summary=os.path.join(individual_path,neuro_name+'_summary.xlsx')
+					individual_F=os.path.join(individual_path,neuro_name+'_F.xlsx')
+					#all_summary.append(basename)
+					#all_F.append(basename)
 					if os.path.exists(individual_summary) is True:
 						all_summary.append(pd.read_excel(individual_summary))
+						names_summary.append(basename)
+					if os.path.exists(individual_F) is True:
+						all_F.append(pd.read_excel(individual_F))
+						names_F.append(basename)
 
 			if len(all_summary)>=1:
-				all_summary=pd.concat(all_summary,ignore_index=True)
-				all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f',index_label='ID/parameter')
+				all_summary=pd.concat(all_summary,keys=names_summary,names=['File name','ID/parameter'])
+				all_summary.drop(all_summary.columns[0],axis=1,inplace=True)
+				all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f')
+				#all_summary=pd.concat(all_summary,ignore_index=True)
+				#all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f',index_label='ID/parameter')
+			if len(all_F)>=1:
+				all_F=pd.concat(all_F,keys=names_F,names=['File name','frame/ID'])
+				all_F.drop(all_F.columns[0],axis=1,inplace=True)
+				all_F.to_excel(os.path.join(self.result_path,'all_F.xlsx'),float_format='%.2f')
+				#all_F=pd.concat(all_F,ignore_index=True)
+				#all_F.to_excel(os.path.join(self.result_path,'all_F.xlsx'),float_format='%.2f',index_label='frame/ID')
 
 			print('Analysis completed!')
 
