@@ -682,8 +682,8 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		self.stimulation_channel=0
 		self.main_channel=1
 		self.duration=0
-		self.F0_period=10
-		self.F_period=5
+		self.F0_period=30
+		self.F_period=10
 		self.dispaly_window()
 
 
@@ -984,14 +984,10 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 				all_summary=pd.concat(all_summary,keys=names_summary,names=['File name','ID/parameter'])
 				all_summary.drop(all_summary.columns[0],axis=1,inplace=True)
 				all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f')
-				#all_summary=pd.concat(all_summary,ignore_index=True)
-				#all_summary.to_excel(os.path.join(self.result_path,'all_summary.xlsx'),float_format='%.2f',index_label='ID/parameter')
 			if len(all_F)>=1:
 				all_F=pd.concat(all_F,keys=names_F,names=['File name','frame/ID'])
 				all_F.drop(all_F.columns[0],axis=1,inplace=True)
 				all_F.to_excel(os.path.join(self.result_path,'all_F.xlsx'),float_format='%.2f')
-				#all_F=pd.concat(all_F,ignore_index=True)
-				#all_F.to_excel(os.path.join(self.result_path,'all_F.xlsx'),float_format='%.2f',index_label='frame/ID')
 
 			print('Analysis completed!')
 
