@@ -682,8 +682,8 @@ class WindowLv2_AnalyzeCalcium(wx.Frame):
 		self.stimulation_channel=0
 		self.main_channel=1
 		self.duration=0
-		self.F0_period=30
-		self.F_period=10
+		self.F0_period=10
+		self.F_period=30
 		self.dispaly_window()
 
 
